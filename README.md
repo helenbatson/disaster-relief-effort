@@ -34,11 +34,11 @@ By adding in more features, and doing hyperparameter tuning, the accuracy reache
 ## Technical Information
 
 ##### Libraries:
-1. import sys
-1. import re
-1. import numpy
-1. import pandas
-1. import pickle
+1. sys
+1. re
+1. numpy
+1. pandas
+1. pickle
 1. sqlalchemy
 1. nltk
 1. sklearn
@@ -48,10 +48,9 @@ By adding in more features, and doing hyperparameter tuning, the accuracy reache
 1. process_data.py: the python code which cleans the data before adding it to a databcase
 1. train_classifier.py: the python code which builds and evaluates a model for the data in the database and saves a dataframe to a pickle file, where the pickle library is used for serializing and deserializing objects.
 
-messages.csv: messages created by thepublic in the native language, converted into english.
-categories.csv: categories into which messages fall; water, medical, etc.
-
-empty_shelves.jpg: a picture of empty shelves in a supermarket.
+1. messages.csv: messages created by thepublic in the native language, converted into english.
+1. categories.csv: categories into which messages fall; water, medical, etc.
+1. empty_shelves.jpg: a picture of empty shelves in a supermarket.
 
 
 ### Instructions:
@@ -74,5 +73,5 @@ Install the files into a folder on your computer
 
 ### Licensing, Authors, Acknowledgements
 
-The data files were retrieved from www.figure-eight.com
+The data files were retrieved from www.figure-eight.com. 
 Thanks to my mentors at [Udacity]https://www.udacity.com/ for helping me to understand my results
