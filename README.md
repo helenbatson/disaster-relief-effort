@@ -28,40 +28,20 @@ Using Pipelines and FeatureUnions helped to orgainse the code for readability, r
 ## Conclusion
 By adding in more features, and doing hyperparameter tuning, the accuracy reached x%.
 
-
+------------------------------------------------------------------------------------------------------------------
 
 # Implementation
 ## Technical Information
 
-### Installation
-1. Fork / Install the files into a folder on your computer
-1. Run the - file in the command line.
-
-
-##### Libraries used:
+##### Libraries:
 1. import sys
-import re
-import numpy as np
-import pandas as pd
-import pickle
-
-from sqlalchemy import create_engine
-
-from nltk.tokenize import word_tokenize
-from nltk.stem import WordNetLemmatizer
-
-#from sklearn.neighbors import KNeighborsClassifier
-
-from sklearn import metrics
-from sklearn.model_selection import GridSearchCV
-from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.multioutput import MultiOutputClassifier
-from sklearn.base import BaseEstimator, TransformerMixin
-
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.metrics import confusion_matrix,accuracy_score,classification_report
+1. import re
+1. import numpy
+1. import pandas
+1. import pickle
+1. sqlalchemy
+1. nltk
+1. sklearn
 
 
 ### File Descriptions
@@ -77,6 +57,7 @@ empty_shelves.jpg: a picture of empty shelves in a supermarket.
 ### Instructions:
 
 ### How To Interact With The Project
+Install the files into a folder on your computer
 
 1. Run the following commands in the project's root directory to set up your database and model.
 
@@ -93,5 +74,5 @@ empty_shelves.jpg: a picture of empty shelves in a supermarket.
 
 ### Licensing, Authors, Acknowledgements
 
-The data files were retrieved from [Figure Eight]www.figure-eight.com
+The data files were retrieved from www.figure-eight.com
 Thanks to my mentors at [Udacity]https://www.udacity.com/ for helping me to understand my results
