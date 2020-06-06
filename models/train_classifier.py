@@ -7,6 +7,7 @@ import pickle
 
 from sqlalchemy import create_engine
 
+import nltk
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 
@@ -23,18 +24,27 @@ from sklearn.metrics import confusion_matrix,accuracy_score,classification_repor
 nltk.download(['punkt', 'wordnet'])
 
 
+def load_data(database_filepath):
 # load data from database
-def load_data():
-    engine = create_engine('sqlite:///data/DisasterResponse.db')
+    root = 'sqlite:///'
+    engine = create_engine(root+database_filepath)
     df = pd.read_sql_table('disaster_table', con=engine)
-    X = df.text.values
-    y = df.category.values
-    return X, y
+    X = df.message.values
+    y = df[['related', 'request', 'aid_related', 'medical_help', 'medical_products',
+       'military', 'water', 'food', 'shelter', 'clothing', 'death',
+       'other_aid', 'transport', 'buildings', 'weather_related', 'floods',
+       'storm', 'earthquake', 'other_weather',
+       'direct_report']].values
+    category_names = ['related', 'request', 'aid_related', 'medical_help', 'medical_products',
+       'military', 'water', 'food', 'shelter', 'clothing', 'death',
+       'other_aid', 'transport', 'buildings', 'weather_related', 'floods',
+       'storm', 'earthquake', 'other_weather',
+       'direct_report']
+    return X, y, category_names
 
 
 # tokenization function to process your text data
 def tokenize(text):
-
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
 
@@ -50,10 +60,67 @@ def tokenize(text):
 # This machine pipeline takes in the message column as input and outputs classification results
 # on the other 36 categories in the dataset (multiple target variables).
 def build_model():
+
+    # Custom transformer
+    class WordDeathExtractor(BaseEstimator, TransformerMixin):
+
+        def find_death(self, text):
+            terms = ['dead', 'dying', 'die', 'death', 'alive', 'life', 'living'] #search for terms related to death
+            sentence_list = nltk.sent_tokenize(text)
+
+            for sentence in sentence_list:
+
+                words = sentence.split()              #split the sentence into individual words
+
+                if terms in words:                    #see if one of the words in the sentence is related to death
+                    return True
+            return False
+
+        def fit(self, x, y=None):
+            return self
+
+        def transform(self, X):
+            X_tagged = pd.Series(X).apply(self.find_death) # From Series to Numpy array
+            return pd.DataFrame(X_tagged) # To Dataframe
+
+
+    # Custom transformer
+    class WordMinorExtractor(BaseEstimator, TransformerMixin):
+
+        def find_minor(self, text):
+            terms = ['kid', 'child', 'baby', 'toddler', 'teen', 'teenager', 'minor'] #search for terms related to minors
+            sentence_list = nltk.sent_tokenize(text)
+
+            for sentence in sentence_list:
+
+                words = sentence.split()              #split the sentence into individual words
+
+                if terms in words:                    #see if one of the words in the sentence is related to death
+                    return True
+            return False
+
+        def fit(self, x, y=None):
+            return self
+
+        def transform(self, X):
+            X_tagged = pd.Series(X).apply(self.find_minor) # From Series to Numpy array
+            return pd.DataFrame(X_tagged) # To Dataframe
+
+
     pipeline = Pipeline([
-        ('vect', CountVectorizer(tokenizer=tokenize)),
-        ('tfidf', TfidfTransformer()),
-        ('clf', MultiOutputClassifier(RandomForestClassifier()))
+        ('features', FeatureUnion([
+
+            ('text_pipeline', Pipeline([
+                ('vect', CountVectorizer(tokenizer=tokenize)),
+                ('tfidf', TfidfTransformer())
+            ])),
+
+            ('find_death', WordDeathExtractor()),
+
+            ('find_minor', WordDeathExtractor())
+        ])),
+
+            ('clf', MultiOutputClassifier(RandomForestClassifier()))
     ])
 
     return pipeline
@@ -61,6 +128,17 @@ def build_model():
 
 #Train pipeline
 def evaluate_model(model, X_test, y_test, category_names):
+
+    parameters = {
+        "clf__estimator__n_estimators": [1,2,3,5],
+        "clf__estimator__max_depth":[1,2,3,5],
+        "clf__estimator__criterion": ["gini", "entropy"]
+    }
+
+    # Use grid search
+    cv_gridsearch = GridSearchCV(pipeline, param_grid=parameters)
+
+
     # predict on the test data
     y_pred = pipeline.predict(X_test)
 
@@ -82,7 +160,7 @@ def evaluate_model(model, X_test, y_test, category_names):
     all_classification_reports = []
 
     for col in range(y_pred.shape[1]):
-        all_classification_reports.append(classification_report(test_matrix[col], pred_matrix[col])) #output_dict=True is in sklearn 0.20
+        all_classification_reports.append(classification_report(test_matrix[col], pred_matrix[col]))
 
 
 def save_model(model, model_filepath):
@@ -91,14 +169,11 @@ def save_model(model, model_filepath):
     pickle.dump(pipeline,open("models/classifier.pkl","wb"))
 
 
-
 def main():
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
         X, Y, category_names = load_data(database_filepath)
-
-        # perform train test split
         X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
 
         print('Building model...')
