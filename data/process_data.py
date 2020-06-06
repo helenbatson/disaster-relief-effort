@@ -5,16 +5,16 @@ import sqlite3
 import sqlalchemy as db
 from sqlalchemy import create_engine
 
-
-
-
 def load_data(messages_filepath, categories_filepath):
-    messages = pd.read_csv('messages.csv')
-    categories = pd.read_csv('categories.csv')
+    messages = pd.read_csv('disaster_messages.csv')
+    categories = pd.read_csv('disaster_categories.csv')
 
+    df = pd.merge(messages, categories, on='id')
+
+    return df
 
 def clean_data(df):
-    df = pd.merge(messages, categories, on='id')
+
     '''
     Split `categories` into separate category columns.
     - Split the values in the `categories` column on the `;`
@@ -61,13 +61,15 @@ def clean_data(df):
     #- Drop the categories column from the df dataframe since it is no longer needed.
     #- Concatenate df and categories data frames.
 
-    # drop the original categories column from `df`
-    df=df.drop('categories', axis=1)
-
-    df_new = pd.merge(df.reset_index(drop=True),
+    df = pd.merge(df.reset_index(drop=True),
                  categories.reset_index(drop=True),
                  left_index=True,
                  right_index=True)
+
+
+    # Change value 2 to value 1 for boolean values throughout the matrix
+    df['related2'] = df['related'].replace([0,1,2],[0,1,1],inplace=True)
+
 
     #Remove duplicates.
     # Check how many duplicates are in this dataset.
@@ -75,25 +77,26 @@ def clean_data(df):
     # Confirm duplicates were removed.
 
     # drop duplicates
-    df_new=df_new.drop_duplicates()
+    df=df.drop_duplicates()
 
-    return df_new
+    # drop the original categories column from `df`
+    # and the y_pred columns without predictions
+    df=df.drop(['id'], axis=1)
 
+    return df
 
 
 def save_data(df, database_filename):
     #Save the clean dataset into an sqlite database.
     # Create the connection
     # Set echo=True to see all of the output that comes from our database connection.
-    engine = create_engine('sqlite:///data/DisasterResponse.db', echo=True)
+    engine = create_engine('sqlite:///DisasterResponse.db', echo=True)
     sqlite_connection = engine.connect()
 
     sqlite_table = "disaster_table"
-    df_new.to_sql(sqlite_table, sqlite_connection, if_exists='fail')
+    df.to_sql(sqlite_table, sqlite_connection, if_exists='fail')
 
     sqlite_connection.close()
-
-
 
 def main():
     if len(sys.argv) == 4:
