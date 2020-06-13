@@ -33,6 +33,13 @@ By adding in more features, and doing hyperparameter tuning, the accuracy reache
 # Implementation
 ## Technical Information
 
+##### Pip Install
+sklearn
+nltk
+plotly
+flask
+joblib
+
 ##### Libraries:
 1. sys
 1. re
@@ -42,11 +49,22 @@ By adding in more features, and doing hyperparameter tuning, the accuracy reache
 1. sqlalchemy
 1. nltk
 1. sklearn
+1. plotly
+1. flask
+1. joblib
+1. json
+1. sqlalchemy
+1. sqlite3
 
 
 ### File Descriptions
-1. process_data.py: the python code which cleans the data before adding it to a databcase
-1. train_classifier.py: the python code which builds and evaluates a model for the data in the database and saves a dataframe to a pickle file, where the pickle library is used for serializing and deserializing objects.
+1. process_data.py: cleans the data before adding it to a database
+1. train_classifier.py: builds and evaluates a model for the data in the database and saves a dataframe to a pickle file, where the pickle library is used for serializing and deserializing objects.
+1. transformation.py: creates the custom transformers to find specific terms in the messages.
+1. run.py: runs the app in a web browser untilizing the database and model.
+1. master.html: main html page for layout and styling of the web app.
+1. go.html: outputs the model results to the web app.
+
 
 1. messages.csv: messages created by thepublic in the native language, converted into english.
 1. categories.csv: categories into which messages fall; water, medical, etc.
