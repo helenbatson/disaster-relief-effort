@@ -1,13 +1,14 @@
 import re
 import sys
+import numpy as np
 import pandas as pd
 import sqlite3
 import sqlalchemy as db
 from sqlalchemy import create_engine
 
 def load_data(messages_filepath, categories_filepath):
-    messages = pd.read_csv('disaster_messages.csv')
-    categories = pd.read_csv('disaster_categories.csv')
+    messages = pd.read_csv('data/disaster_messages.csv')
+    categories = pd.read_csv('data/disaster_categories.csv')
 
     df = pd.merge(messages, categories, on='id')
 
@@ -69,10 +70,7 @@ def clean_data(df):
     #- Drop the categories column from the df dataframe since it is no longer needed.
     #- Concatenate df and categories data frames.
 
-    df = pd.merge(df.reset_index(drop=True),
-                 categories.reset_index(drop=True),
-                 left_index=True,
-                 right_index=True)
+    df = pd.concat([df, categories], axis=1).reindex(df.index)
 
 
     #Remove duplicates
@@ -89,7 +87,7 @@ def save_data(df, database_filename):
     #Save the clean dataset into an sqlite database.
     # Create the connection
     # Set echo=True to see all of the output that comes from our database connection.
-    engine = create_engine('sqlite:///DisasterResponse.db', echo=True)
+    engine = create_engine('sqlite:///data/DisasterResponse.db', echo=True)
     sqlite_connection = engine.connect()
 
     sqlite_table = "disaster_table"
