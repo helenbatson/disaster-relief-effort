@@ -1,32 +1,49 @@
 # Disaster Relief Effort
 
-Data engineering using pre-labelled tweet and text messages from real life disasters; thanks to the company Figure Eight for their data.
+Data engineering with the use of pre-labelled tweet and text messages from real life disasters; thanks to the company Figure Eight for their data.
 
 ![Empty shelves in a large supermarket during Covid19](empty_shelves.jpg)
 
 ## Introduction
-After a disaster has occurred there are usually millions of communications right at the time that disaster response organizations have the least capacity to retrieve the most important messages.
+After a disaster has occurred millions of communications are exchanged right at the time that disaster response organizations have the least capacity to categorize important messages to let relevant organizations know who needs help.
 Different organizations would generally take care of specific parts of the problem, like water, medical supplies, blocked roads. These are some of the categories that Figure Eight has pulled out of the data.
 The expectation is that this project could be used in future disaster relief projects to benefit people affected during hard times.
 
-Supervised Machine Learning is more accurate than a person performing keyword searches, and this is an issue in disaster relief. The data has been repaired with an ETL pipeline and then a machine learning pipeline was used to build a supervised learning model.
+Supervised machine learning is used and is more accurate than a person performing keyword searches, which is an issue in disaster relief. The data has been repaired with an ETL pipeline and then a machine learning pipeline has been used to build a supervised learning model.
 
 ## Questions
 Can the data be analyzed to divide messages so that the right organizations would be of most help to the people who need it?
 
 ## Findings
 ### Building the model
-Pipelines are used to take in the data form the database, puts it through a tokenizer, tfidf transformer, two custom transformers which find messages related to death and children, and finally through the Random Forest classifier – to produce a trained model, which can then be used for prediction.
+Pipelines are used to take in the data from the database, put it through a tokenizer, tfidf transformer, two custom transformers which find messages related to death and children, and finally through a random forest classifier – to produce a trained model, which can then be used for prediction.
 
-### FeatureUnions
-Using Scikit-learn’s FeatureUnion class makes it easy to write complex pipelines by building smaller pieces (transformers) and then combining them horizontally.
+Using Scikit-learn’s FeatureUnion class makes it easy to write complex pipelines. Here smaller pieces (transformers) have been built and then combined horizontally.
+
+Using Pipelines and FeatureUnions helped in the orgainzation of the code for readability, reusability and easier experimentation.
 
 ### What happened after adding these features?
-Accuracy went up to x%
-Using Pipelines and FeatureUnions helped to orgainse the code for readability, reusability and easier experimentation.
+Accuracy is low after applying a random forest classifier to the data. An SGD classifier was also used, but since the train-test split produced some labels with just zeros there was no way of moving forward with this model.
+Other classifers which support multi-labels will be tried in future versions of the app.
+
+* sklearn.tree.DecisionTreeClassifier
+* sklearn.tree.ExtraTreeClassifier
+* sklearn.ensemble.ExtraTreesClassifier
+* sklearn.neighbors.KNeighborsClassifier
+* sklearn.neural_network.MLPClassifier
+* sklearn.neighbors.RadiusNeighborsClassifier
+* sklearn.ensemble.RandomForestClassifier
+* sklearn.linear_model.RidgeClassifierCV
+
+Here we see in a message about flooding, the flood output is highlighted
+![Example results](lost_in_flood.png)
 
 ## Conclusion
-By adding in more features, and doing hyperparameter tuning, the accuracy reached x%.
+Accuracy is in the twenty percentages after applying a combination of parameters using a pipeline.
+By adding in more features, and doing hyperparameter tuning, the accuracy still only reached less than 30%.
+
+This may be expected due to the number of messages/tokens versus variables, though other classifiers are worth trying to increase the current accuracy.
+
 
 ------------------------------------------------------------------------------------------------------------------
 
@@ -92,4 +109,4 @@ Install the files into a folder on your computer
 ### Licensing, Authors, Acknowledgements
 
 The data files were retrieved from www.figure-eight.com. 
-Thanks to my mentors at [Udacity]https://www.udacity.com/ for helping me to understand my results
+Thanks to my mentors at [Udacity]https://www.udacity.com/ for helping me to understand my results.
