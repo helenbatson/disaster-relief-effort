@@ -77,16 +77,23 @@ def build_model():
                 ('tfidf', TfidfTransformer())
             ])),
 
-            ('find_death', transformation.WordDeathExtractor()),
+            #('find_death', transformation.WordDeathExtractor()),
 
-            ('find_minor', transformation.WordDeathExtractor())
+            #('find_minor', transformation.WordDeathExtractor())
         ])),
 
             ('clf', MultiOutputClassifier(RandomForestClassifier()))
     ])
 
     parameters = {
-        'features__text_pipeline__vect__max_df': (0.5, 0.75, 1.0)
+        'features__text_pipeline__vect__max_df': [0.5,1.0],
+        'vect__max_df': [0.5],
+        'clf__estimator__bootstrap': [True, False],
+        'clf__max_depth': [10, None],
+        'clf__max_features': ['auto', 'sqrt'],
+        'clf__min_samples_leaf': [1, 8],
+        'clf__min_samples_split': [2, 10],
+        'clf__n_estimators': [50, 400, 1000, 1400, 2000]
     }
 
     cv_gridsearch = GridSearchCV(model, param_grid=parameters)
