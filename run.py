@@ -1,5 +1,6 @@
 import json
 import plotly
+import joblib
 import pandas as pd
 
 from nltk.stem import WordNetLemmatizer
@@ -8,7 +9,7 @@ from nltk.tokenize import word_tokenize
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
-from sklearn.externals import joblib
+import plotly.express as px
 from sqlalchemy import create_engine
 
 
@@ -26,11 +27,13 @@ def tokenize(text):
     return clean_tokens
 
 # load data
-engine = create_engine('sqlite:///../data/DisasterResponse.db')
+engine = create_engine('sqlite:///data/DisasterResponse.db')
+#sqlite:///../data/DisasterResponse.db
+
 df = pd.read_sql_table('disaster_table', engine)
 
 # load model
-model = joblib.load("../models/classifier.pkl")
+model = joblib.load('models/classifier.pkl')
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -38,14 +41,49 @@ model = joblib.load("../models/classifier.pkl")
 @app.route('/index')
 def index():
 
-    # extract data needed for visuals
-    # TODO: Below is an example - modify to extract data for your own visuals
+    # extract data needed for bar chart visuals
+    water_counts = df[df.water == 1].groupby(['genre']).count()
+    food_counts = df[df.food == 1].groupby(['genre']).count()
+    medical_help_counts = df[df.medical_help == 1].groupby(['genre']).count()
+    category_names = list(water_counts.index)
+
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
 
+
     # create visuals
-    # TODO: Below is an example - modify to create your own visuals
     graphs = [
+        {
+            'data': [
+                Bar(
+                    x=category_names,
+                    y=water_counts,
+                    name='Water',
+                    marker=dict(color='#3498db')
+                ),
+                Bar(
+                    x=category_names,
+                    y=food_counts,
+                    name='Food',
+                    marker=dict(color='#f1c40f')
+                ),
+                Bar(
+                    x=category_names,
+                    y=medical_help_counts,
+                    name='Medical',
+                    marker=dict(color='#e74c3c')
+                )
+            ],
+            'layout': {
+                'title': 'Distribution of Vital Messages',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Genre: Water, Food, Medical"
+                }
+            }
+        },
         {
             'data': [
                 Bar(
