@@ -34,11 +34,11 @@ By adding in more features, and doing hyperparameter tuning, the accuracy reache
 ## Technical Information
 
 ##### Pip Install
-sklearn
-nltk
-plotly
-flask
-joblib
+1. sklearn
+1. nltk
+1. plotly
+1. flask
+1. joblib
 
 ##### Libraries:
 1. sys
