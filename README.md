@@ -35,8 +35,11 @@ Other classifers which support multi-labels will be tried in future versions of 
 * sklearn.ensemble.RandomForestClassifier
 * sklearn.linear_model.RidgeClassifierCV
 
-Here we see in a message about flooding, the flood output is highlighted
+Here we see in a message about flooding and missing children, only the flood output is highlighted. We would expect missing people to be a key aspect of the model output, especially since one of the custom transformers is dedicated to this.
+
 ![Example results](lost_in_flood.png)
+
+
 
 ## Conclusion
 Accuracy is in the twenty percentages after applying a combination of parameters using a pipeline.
