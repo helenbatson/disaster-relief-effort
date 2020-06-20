@@ -4,10 +4,12 @@ import re
 import numpy as np
 import pandas as pd
 import pickle
+import transformation
 
 from sqlalchemy import create_engine
 
 import nltk
+from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 
@@ -21,32 +23,50 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.metrics import confusion_matrix,accuracy_score,classification_report
 
-nltk.download(['punkt', 'wordnet'])
-
+nltk.download(['punkt', 'wordnet', 'stopwords'])
 
 def load_data(database_filepath):
-# load data from database
+    '''
+    Load data in from the database
+    Split into X and y
+    Category names are the columns names from y
+    '''
+
     root = 'sqlite:///'
     engine = create_engine(root+database_filepath)
     df = pd.read_sql_table('disaster_table', con=engine)
     X = df.message.values
-    y = df[['related', 'request', 'aid_related', 'medical_help', 'medical_products',
-       'military', 'water', 'food', 'shelter', 'clothing', 'death',
-       'other_aid', 'transport', 'buildings', 'weather_related', 'floods',
-       'storm', 'earthquake', 'other_weather',
-       'direct_report']].values
-    category_names = ['related', 'request', 'aid_related', 'medical_help', 'medical_products',
-       'military', 'water', 'food', 'shelter', 'clothing', 'death',
-       'other_aid', 'transport', 'buildings', 'weather_related', 'floods',
-       'storm', 'earthquake', 'other_weather',
-       'direct_report']
+    y = df[['related',
+       'request', 'offer', 'aid_related', 'medical_help', 'medical_products',
+       'search_and_rescue', 'security', 'military', 'child_alone', 'water',
+       'food', 'shelter', 'clothing', 'money', 'missing_people', 'refugees',
+       'death', 'other_aid', 'infrastructure_related', 'transport',
+       'buildings', 'electricity', 'tools', 'hospitals', 'shops',
+       'aid_centers', 'other_infrastructure', 'weather_related', 'floods',
+       'storm', 'fire', 'earthquake', 'cold', 'other_weather', 'direct_report']].values
+    category_names = ['related',
+       'request', 'offer', 'aid_related', 'medical_help', 'medical_products',
+       'search_and_rescue', 'security', 'military', 'child_alone', 'water',
+       'food', 'shelter', 'clothing', 'money', 'missing_people', 'refugees',
+       'death', 'other_aid', 'infrastructure_related', 'transport',
+       'buildings', 'electricity', 'tools', 'hospitals', 'shops',
+       'aid_centers', 'other_infrastructure', 'weather_related', 'floods',
+       'storm', 'fire', 'earthquake', 'cold', 'other_weather', 'direct_report']
     return X, y, category_names
 
 
-# tokenization function to process your text data
 def tokenize(text):
+    '''
+    Tokenize and lowercase text data
+    Remove stopwords
+    Leading and trailing whitespaces are removed
+    '''
+    stop_words = set(stopwords.words('english'))
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
+
+    # Remove stop words
+    tokens = [t for t in tokens if t not in stopwords.words("english")]
 
     clean_tokens = []
     for tok in tokens:
@@ -56,57 +76,12 @@ def tokenize(text):
     return clean_tokens
 
 
-#Build a machine learning pipeline
-# This machine pipeline takes in the message column as input and outputs classification results
-# on the other 36 categories in the dataset (multiple target variables).
 def build_model():
-
-    # Custom transformer
-    class WordDeathExtractor(BaseEstimator, TransformerMixin):
-
-        def find_death(self, text):
-            terms = ['dead', 'dying', 'die', 'death', 'alive', 'life', 'living'] #search for terms related to death
-            sentence_list = nltk.sent_tokenize(text)
-
-            for sentence in sentence_list:
-
-                words = sentence.split()              #split the sentence into individual words
-
-                if terms in words:                    #see if one of the words in the sentence is related to death
-                    return True
-            return False
-
-        def fit(self, x, y=None):
-            return self
-
-        def transform(self, X):
-            X_tagged = pd.Series(X).apply(self.find_death) # From Series to Numpy array
-            return pd.DataFrame(X_tagged) # To Dataframe
-
-
-    # Custom transformer
-    class WordMinorExtractor(BaseEstimator, TransformerMixin):
-
-        def find_minor(self, text):
-            terms = ['kid', 'child', 'baby', 'toddler', 'teen', 'teenager', 'minor'] #search for terms related to minors
-            sentence_list = nltk.sent_tokenize(text)
-
-            for sentence in sentence_list:
-
-                words = sentence.split()              #split the sentence into individual words
-
-                if terms in words:                    #see if one of the words in the sentence is related to death
-                    return True
-            return False
-
-        def fit(self, x, y=None):
-            return self
-
-        def transform(self, X):
-            X_tagged = pd.Series(X).apply(self.find_minor) # From Series to Numpy array
-            return pd.DataFrame(X_tagged) # To Dataframe
-
-
+    '''
+    Build a machine learning pipeline
+    This machine pipeline takes in the message column as input and outputs classification results
+    on the other 36 categories in the dataset (multiple target variables).
+    '''
     pipeline = Pipeline([
         ('features', FeatureUnion([
 
@@ -115,75 +90,75 @@ def build_model():
                 ('tfidf', TfidfTransformer())
             ])),
 
-            ('find_death', WordDeathExtractor()),
+            ('find_death', transformation.WordDeathExtractor()),
 
-            ('find_minor', WordDeathExtractor())
+            ('find_minor', transformation.WordDeathExtractor())
         ])),
 
             ('clf', MultiOutputClassifier(RandomForestClassifier()))
     ])
 
-    return pipeline
-
-
-#Train pipeline
-def evaluate_model(model, X_test, y_test, category_names):
-
     parameters = {
-        "clf__estimator__n_estimators": [1,2,3,5],
-        "clf__estimator__max_depth":[1,2,3,5],
-        "clf__estimator__criterion": ["gini", "entropy"]
+    'features__text_pipeline__vect__max_df': [0.5, 1],
+    'clf__estimator__bootstrap': [True, False],
+    'clf__estimator__max_depth': [10, None],
+    'clf__estimator__max_features': ['auto', 'sqrt'],
+    'clf__estimator__min_samples_leaf': [1, 8],
+    'clf__estimator__min_samples_split': [2, 10],
+    'clf__estimator__n_estimators': [50, 400, 1000, 1400, 2000]
     }
 
-    # Use grid search
     cv_gridsearch = GridSearchCV(pipeline, param_grid=parameters)
 
+    return cv_gridsearch
+
+
+def evaluate_model(model, X_test, y_test, category_names):
+    '''
+     Train pipeline
+     Return classification report
+         Report the f1 score, precision and recall for each output category of the dataset.
+    '''
+
+    y_test = pd.DataFrame(data=y_test, columns=category_names)
 
     # predict on the test data
-    y_pred = pipeline.predict(X_test)
+    y_pred = model.predict(X_test)
+    # convert to dataframe
+    y_pred = pd.DataFrame(data=y_pred, columns=category_names)
 
-    # Report the f1 score, precision and recall for each output category of the dataset.
-    # You can do this by iterating through the columns and calling sklearn's `classification_report` on each.
-
-    # Get one column from y_test and the corresponding column from y_pred and pass to classification_report
-
-    test_matrix = []
-    for col_y in y_test.columns:
-        y_test_col=y_test[col_y]
-        test_matrix.append(y_test_col.values)
-
-    pred_matrix = []
-    for col_p in range(y_pred.shape[1]):
-        y_pred_col=y_pred[:,col_p]
-        pred_matrix.append(y_pred_col)
-
-    all_classification_reports = []
-
-    for col in range(y_pred.shape[1]):
-        all_classification_reports.append(classification_report(test_matrix[col], pred_matrix[col]))
+    return classification_report(y_test, y_pred)
 
 
 def save_model(model, model_filepath):
-    #Export your model as a pickle file
-    #After training we save the model in a pickle file to be used for future predictions
-    pickle.dump(pipeline,open("models/classifier.pkl","wb"))
+    '''
+    Export the model as a pickle file
+    After training we save the model in a pickle file to be used for future predictions
+    '''
+
+    with open(model_filepath, 'wb') as model_file:
+        pickle.dump(model,model_file)
+
 
 
 def main():
+'''
+Run all functions to train the model, clean the data and save it to a database.
+'''
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
-        X, Y, category_names = load_data(database_filepath)
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
+        X, y, category_names = load_data(database_filepath)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
         print('Building model...')
         model = build_model()
 
         print('Training model...')
-        model.fit(X_train, Y_train)
+        model.fit(X_train, y_train)
 
         print('Evaluating model...')
-        evaluate_model(model, X_test, Y_test, category_names)
+        evaluate_model(model, X_test, y_test, category_names)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)
