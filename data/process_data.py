@@ -92,10 +92,13 @@ def save_data(df, database_filename):
     '''
     Save df to database as a table: disaster_table
     '''
-    #Save the clean dataset into an sqlite database.
+    # Save the clean dataset into an sqlite database.
     # Create the connection
     # Set echo=True to see all of the output that comes from our database connection.
-    engine = create_engine('database_filename', echo=True)
+
+    root = 'sqlite:///'
+    engine = create_engine(root+database_filename, echo=True)
+
     sqlite_connection = engine.connect()
 
     sqlite_table = "disaster_table"
