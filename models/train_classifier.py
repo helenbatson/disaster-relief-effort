@@ -61,12 +61,14 @@ def tokenize(text):
     Remove stopwords
     Leading and trailing whitespaces are removed
     '''
-    stop_words = set(stopwords.words('english'))
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
 
-    # Remove stop words
+    # Remove stop words in multiple languages
     tokens = [t for t in tokens if t not in stopwords.words("english")]
+    tokens = [t for t in tokens if t not in stopwords.words("french")]
+    tokens = [t for t in tokens if t not in stopwords.words("italian")]
+    tokens = [t for t in tokens if t not in stopwords.words("spanish")]
 
     clean_tokens = []
     for tok in tokens:
@@ -99,13 +101,13 @@ def build_model():
     ])
 
     parameters = {
-    'features__text_pipeline__vect__max_df': [0.5, 1],
-    'clf__estimator__bootstrap': [True, False],
-    'clf__estimator__max_depth': [10, None],
-    'clf__estimator__max_features': ['auto', 'sqrt'],
-    'clf__estimator__min_samples_leaf': [1, 8],
-    'clf__estimator__min_samples_split': [2, 10],
-    'clf__estimator__n_estimators': [50, 400, 1000, 1400, 2000]
+    'features__text_pipeline__vect__max_df': [0.5]#, 1],
+    #'clf__estimator__bootstrap': [True, False],
+    #'clf__estimator__max_depth': [10, None],
+    #'clf__estimator__max_features': ['auto', 'sqrt'],
+    #'clf__estimator__min_samples_leaf': [1, 8],
+    #'clf__estimator__min_samples_split': [2, 10],
+    #'clf__estimator__n_estimators': [50, 400, 1000, 1400, 2000]
     }
 
     cv_gridsearch = GridSearchCV(pipeline, param_grid=parameters)
@@ -142,9 +144,9 @@ def save_model(model, model_filepath):
 
 
 def main():
-'''
-Run all functions to train the model, clean the data and save it to a database.
-'''
+    '''
+    Run all functions to train the model, clean the data and save it to a database.
+    '''
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
