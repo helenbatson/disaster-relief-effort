@@ -3,14 +3,18 @@ import plotly
 import joblib
 import pandas as pd
 
-from nltk.stem import WordNetLemmatizer
+import nltk
+from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
 
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
 import plotly.express as px
 from sqlalchemy import create_engine
+
+nltk.download(['punkt', 'wordnet', 'stopwords'])
 
 
 app = Flask(__name__)
@@ -21,12 +25,14 @@ def tokenize(text):
     Remove stopwords
     Leading and trailing whitespaces are removed
     '''
-    stop_words = set(stopwords.words('english'))
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
 
-    # Remove stop words
+    # Remove stop words in multiple languages
     tokens = [t for t in tokens if t not in stopwords.words("english")]
+    tokens = [t for t in tokens if t not in stopwords.words("french")]
+    tokens = [t for t in tokens if t not in stopwords.words("italian")]
+    tokens = [t for t in tokens if t not in stopwords.words("spanish")]
 
     clean_tokens = []
     for tok in tokens:
