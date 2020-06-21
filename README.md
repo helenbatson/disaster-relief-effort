@@ -42,7 +42,7 @@ Here we see in a message about flooding and missing children, only the flood out
 Here we see a chart of the number of messages sent for key survival items.
 Water is the only one where people use social media to ask for help; we may assume it's due to the urgency.
 
-![Example results](chart_vital messages.png)
+![Example results](chart_vital.png)
 
 ## Conclusion
 Accuracy is in the twenty percentages after applying a combination of parameters using a pipeline.
