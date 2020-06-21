@@ -39,7 +39,10 @@ Here we see in a message about flooding and missing children, only the flood out
 
 ![Example results](lost_in_flood.png)
 
+Here we see a chart of the number of messages sent for key survival items.
+Water is the only one where people use social media to ask for help; we may assume it's due to the urgency.
 
+![Example results](chart_vital messages.png)
 
 ## Conclusion
 Accuracy is in the twenty percentages after applying a combination of parameters using a pipeline.
@@ -103,7 +106,7 @@ Install the files into a folder on your computer
     - To run ML pipeline that trains classifier and saves
         `python models/train_classifier.py data/DisasterResponse.db models/classifier.pkl`
 
-2. Run the following command in the app's directory to run your web app.
+2. Run the following command to view the web app.
     `python app/run.py`
 
 3. Go to http://0.0.0.0:3001/ to run the web app.
