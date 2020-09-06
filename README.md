@@ -40,7 +40,7 @@ Here we see in a message about flooding and missing children, only the flood out
 ![Example results](lost_in_flood.png)
 
 Here we see a chart of the number of messages sent for key survival items.
-Water is the only one where people use social media to ask for help; we may assume it's due to the urgency.
+Water is the only one which is used solely on social media to ask for help; we may assume that due the urgency of it's need, people ask for help on Facebook/ Twitter rather than tell a journalist they need water desparately.
 
 ![Example results](chart_vital.png)
 
